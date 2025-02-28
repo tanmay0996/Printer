@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
-  Card,
   CardContent,
   CardMedia,
   Container,
@@ -33,6 +32,9 @@ import ExcelPreview from '../components/ExcelPreview';
 import DocxThumbnail from './DocxThumbnail';
 import ExcelThumbnail from './ExcelThumbnail';
 
+// Import the custom TiltCard component
+import TiltCard from '../Animation/TiltCard';
+
 // Helper function to get file extension
 const getFileType = (fileName) => fileName.split('.').pop().toLowerCase();
 
@@ -40,21 +42,14 @@ const steps = ['Upload File', 'Print Settings', 'Select Location', 'Order Summar
 
 const PrintSettingsUI = () => {
   const location = useLocation();
-
-  // Files state starts empty but we'll populate it if a file is passed from PrintDocument.jsx
   const [files, setFiles] = useState([]);
   const [selectedFileIndex, setSelectedFileIndex] = useState(0);
-
-  // Example settings
   const [pages, setPages] = useState('');
   const [color, setColor] = useState('Color');
   const [copies, setCopies] = useState(1);
-
-  // New states for additional settings
   const [showMoreSettings, setShowMoreSettings] = useState(false);
-  const [orientation, setOrientation] = useState('Portrait'); // default
+  const [orientation, setOrientation] = useState('Portrait');
 
-  // On mount, check if a file was passed via state and add it to files
   useEffect(() => {
     if (location.state && location.state.selectedFile) {
       const passedFile = location.state.selectedFile;
@@ -63,24 +58,18 @@ const PrintSettingsUI = () => {
         id: 1,
         name: passedFile.name,
         imageUrl: previewURL,
-        file: passedFile  // store the original file
+        file: passedFile
       }]);
       setSelectedFileIndex(0);
-
-      // Cleanup the preview URL when unmounting
       return () => URL.revokeObjectURL(previewURL);
     }
   }, [location.state]);
 
-  // Handle removing a file
   const handleRemoveFile = (id) => {
     setFiles(prev => prev.filter(file => file.id !== id));
-    if (files.length > 1) {
-      setSelectedFileIndex(0);
-    }
+    if (files.length > 1) setSelectedFileIndex(0);
   };
 
-  // Handle adding a new file via file input (for adding more files)
   const handleFileUpload = (event) => {
     const newFile = event.target.files[0];
     if (!newFile) return;
@@ -92,7 +81,7 @@ const PrintSettingsUI = () => {
         id: newId,
         name: newFile.name,
         imageUrl: previewURL,
-        file: newFile  // store the original file
+        file: newFile
       },
     ];
     setFiles(updatedFiles);
@@ -100,7 +89,6 @@ const PrintSettingsUI = () => {
     event.target.value = null;
   };
 
-  // Increase / Decrease copies
   const incrementCopies = () => setCopies(prev => prev + 1);
   const decrementCopies = () => setCopies(prev => (prev > 1 ? prev - 1 : 1));
 
@@ -110,7 +98,6 @@ const PrintSettingsUI = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* Top Stepper */}
       <Stepper activeStep={1} alternativeLabel>
         {steps.map((label, index) => (
           <Step key={label} completed={index < 1}>
@@ -123,7 +110,7 @@ const PrintSettingsUI = () => {
         <Grid container spacing={3}>
           {/* Left Panel */}
           <Grid item xs={12} md={8}>
-            <Card sx={{ p: 2 }}>
+            <TiltCard sx={{ p: 2 }}>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
                   Uploaded Files
@@ -160,7 +147,6 @@ const PrintSettingsUI = () => {
                         } else if (ext === 'xls' || ext === 'xlsx') {
                           return <ExcelThumbnail file={file.file} width={120} height={160} />;
                         } else {
-                          // Fallback: render image preview
                           return (
                             <CardMedia
                               component="img"
@@ -188,23 +174,20 @@ const PrintSettingsUI = () => {
                       </IconButton>
                     </Box>
                   ))}
-                  {/* "Add More Files" button */}
                   <Button variant="outlined" component="label">
                     <AddIcon sx={{ mr: 1 }} />
                     Add More Files
                     <input type="file" hidden onChange={handleFileUpload} />
                   </Button>
                 </Box>
-                {/* Display the selected file name */}
                 {files[selectedFileIndex] && (
                   <Typography variant="subtitle1" sx={{ mt: 2 }}>
                     File Name: {files[selectedFileIndex].name}
                   </Typography>
                 )}
               </CardContent>
-            </Card>
+            </TiltCard>
 
-            {/* Preview Section */}
             {files[selectedFileIndex] && (
               <Box sx={{ mt: 4, textAlign: 'center' }}>
                 <Typography variant="h6" gutterBottom>
@@ -212,25 +195,19 @@ const PrintSettingsUI = () => {
                 </Typography>
                 {(() => {
                   const fileType = getFileType(files[selectedFileIndex].name);
-                  // Base style: apply grayscale filter if B/W is selected.
                   const baseStyle = { filter: color === 'B/W' ? 'grayscale(100%)' : 'none' };
-
-                  // Adjust container style based on orientation:
                   const containerStyle =
-  orientation === 'Landscape'
-    ? { ...baseStyle, width: '900px', height: '600px' }  // fixed landscape dimensions
-    : { ...baseStyle, width: 'auto', height: '750px' };
-
+                    orientation === 'Landscape'
+                      ? { ...baseStyle, width: '900px', height: '600px' }
+                      : { ...baseStyle, width: 'auto', height: '750px' };
 
                   if (fileType === 'pdf') {
-                    // For PDFs, pass containerStyle to PDFViewer as previewStyle.
                     return (
                       <Box sx={containerStyle}>
                         <PDFViewer fileUrl={files[selectedFileIndex].imageUrl} previewStyle={containerStyle} />
                       </Box>
                     );
                   } else {
-                    // For non-PDFs, wrap the preview in a Box that also adds border styling.
                     return (
                       <Box
                         sx={{
@@ -249,10 +226,7 @@ const PrintSettingsUI = () => {
                           <img
                             src={files[selectedFileIndex].imageUrl}
                             alt={files[selectedFileIndex].name}
-                            style={{
-                              maxWidth: '100%',
-                              height: 'auto',
-                            }}
+                            style={{ maxWidth: '100%', height: 'auto' }}
                           />
                         )}
                       </Box>
@@ -271,12 +245,11 @@ const PrintSettingsUI = () => {
 
           {/* Right Panel */}
           <Grid item xs={12} md={4}>
-            <Card sx={{ p: 2 }}>
+            <TiltCard sx={{ p: 2 }}>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
                   Print Options for Selected File
                 </Typography>
-                {/* Pages */}
                 <TextField
                   label="Pages"
                   variant="outlined"
@@ -286,7 +259,6 @@ const PrintSettingsUI = () => {
                   value={pages}
                   onChange={(e) => setPages(e.target.value)}
                 />
-                {/* Color Selection */}
                 <FormControl fullWidth sx={{ mt: 2 }} size="small">
                   <InputLabel>Colour</InputLabel>
                   <Select
@@ -298,7 +270,6 @@ const PrintSettingsUI = () => {
                     <MenuItem value="B/W">Black &amp; White</MenuItem>
                   </Select>
                 </FormControl>
-                {/* Number of Copies */}
                 <Box
                   sx={{
                     mt: 2,
@@ -320,7 +291,6 @@ const PrintSettingsUI = () => {
                     </IconButton>
                   </Box>
                 </Box>
-                {/* Show More Settings */}
                 <Box sx={{ mt: 2 }}>
                   <Button
                     variant="text"
@@ -343,7 +313,6 @@ const PrintSettingsUI = () => {
                     </FormControl>
                   )}
                 </Box>
-                {/* Actions */}
                 <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
                   <Button variant="outlined">Apply to All</Button>
                   <Button variant="contained" onClick={handleSaveChanges}>
@@ -351,7 +320,7 @@ const PrintSettingsUI = () => {
                   </Button>
                 </Box>
               </CardContent>
-            </Card>
+            </TiltCard>
           </Grid>
         </Grid>
       </Box>
