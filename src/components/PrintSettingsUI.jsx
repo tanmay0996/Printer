@@ -209,11 +209,18 @@ const PrintSettingsUI = () => {
     </Typography>
     {(() => {
       const fileType = getFileType(files[selectedFileIndex].name);
+      // Define a style object for the preview container based on color selection.
+      const previewStyle = { filter: color === 'B/W' ? 'grayscale(100%)' : 'none' };
+
       if (fileType === 'pdf') {
-        // Render PDFViewer directly without extra border container
-        return <PDFViewer fileUrl={files[selectedFileIndex].imageUrl} />;
+        // Wrap PDFViewer in a container so that we can apply the filter.
+        return (
+          <Box sx={previewStyle}>
+            <PDFViewer fileUrl={files[selectedFileIndex].imageUrl} />
+          </Box>
+        );
       } else {
-        // Wrap non-PDF previews in a container with border styling
+        // Wrap other previews in a Box that has border styling and the filter applied.
         return (
           <Box
             sx={{
@@ -221,6 +228,7 @@ const PrintSettingsUI = () => {
               border: '1px solid #ccc',
               borderRadius: 4,
               overflow: 'hidden',
+              ...previewStyle,
             }}
           >
             {fileType === 'docx' ? (
@@ -243,6 +251,7 @@ const PrintSettingsUI = () => {
     })()}
   </Box>
 )}
+
 
 
             <Box sx={{ mt: 2, textAlign: 'right' }}>
