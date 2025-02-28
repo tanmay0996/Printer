@@ -25,6 +25,14 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import { useLocation } from 'react-router-dom';
 
+// Import your PDFViewer component
+import PDFViewer from '../components/PDFViewer';
+
+// Helper function to get file extension
+const getFileType = (fileName) => {
+  return fileName.split('.').pop().toLowerCase();
+};
+
 const steps = ['Upload File', 'Print Settings', 'Select Location', 'Order Summary'];
 
 const PrintSettingsUI = () => {
@@ -58,7 +66,7 @@ const PrintSettingsUI = () => {
 
   // Handle removing a file
   const handleRemoveFile = (id) => {
-    setFiles((prev) => prev.filter((file) => file.id !== id));
+    setFiles(prev => prev.filter(file => file.id !== id));
     if (files.length > 1) {
       setSelectedFileIndex(0);
     }
@@ -84,8 +92,8 @@ const PrintSettingsUI = () => {
   };
 
   // Increase / Decrease copies
-  const incrementCopies = () => setCopies((prev) => prev + 1);
-  const decrementCopies = () => setCopies((prev) => (prev > 1 ? prev - 1 : 1));
+  const incrementCopies = () => setCopies(prev => prev + 1);
+  const decrementCopies = () => setCopies(prev => (prev > 1 ? prev - 1 : 1));
 
   const handleSaveChanges = () => {
     alert('Settings saved!');
@@ -111,7 +119,6 @@ const PrintSettingsUI = () => {
                 <Typography variant="h6" gutterBottom>
                   Uploaded Files
                 </Typography>
-
                 <Box
                   sx={{
                     display: 'flex',
@@ -158,19 +165,13 @@ const PrintSettingsUI = () => {
                       </IconButton>
                     </Box>
                   ))}
-
                   {/* "Add More Files" button */}
                   <Button variant="outlined" component="label">
                     <AddIcon sx={{ mr: 1 }} />
                     Add More Files
-                    <input
-                      type="file"
-                      hidden
-                      onChange={handleFileUpload}
-                    />
+                    <input type="file" hidden onChange={handleFileUpload} />
                   </Button>
                 </Box>
-
                 {/* Display the selected file name */}
                 {files[selectedFileIndex] && (
                   <Typography variant="subtitle1" sx={{ mt: 2 }}>
@@ -180,24 +181,31 @@ const PrintSettingsUI = () => {
               </CardContent>
             </Card>
 
-            {/* Preview Section Under the Uploaded Files Box */}
+            {/* Preview Section */}
             {files[selectedFileIndex] && (
-              <Box sx={{ mt: 4, textAlign: 'center' }}>
-                <Typography variant="h6" gutterBottom>
-                  Preview
-                </Typography>
-                <img
-                  src={files[selectedFileIndex].imageUrl}
-                  alt={files[selectedFileIndex].name}
-                  style={{
-                    maxWidth: '100%',
-                    height: 'auto',
-                    border: '1px solid #ccc',
-                    borderRadius: 4,
-                  }}
-                />
-              </Box>
-            )}
+  <Box sx={{ mt: 4, textAlign: 'center' }}>
+    <Typography variant="h6" gutterBottom>
+      Preview
+    </Typography>
+    {getFileType(files[selectedFileIndex].name) === 'pdf' ? (
+      // Render PDFViewer if the file is a PDF
+      <PDFViewer fileUrl={files[selectedFileIndex].imageUrl} />
+    ) : (
+      // Otherwise, render the image preview
+      <img
+        src={files[selectedFileIndex].imageUrl}
+        alt={files[selectedFileIndex].name}
+        style={{
+          maxWidth: '100%',
+          height: 'auto',
+          border: '1px solid #ccc',
+          borderRadius: 4,
+        }}
+      />
+    )}
+  </Box>
+)}
+
 
             <Box sx={{ mt: 2, textAlign: 'right' }}>
               <Button variant="contained" color="primary">
@@ -213,7 +221,6 @@ const PrintSettingsUI = () => {
                 <Typography variant="h6" gutterBottom>
                   Print Options for Selected File
                 </Typography>
-
                 {/* Pages */}
                 <TextField
                   label="Pages"
@@ -224,7 +231,6 @@ const PrintSettingsUI = () => {
                   value={pages}
                   onChange={(e) => setPages(e.target.value)}
                 />
-
                 {/* Color Selection */}
                 <FormControl fullWidth sx={{ mt: 2 }} size="small">
                   <InputLabel>Colour</InputLabel>
@@ -234,10 +240,9 @@ const PrintSettingsUI = () => {
                     onChange={(e) => setColor(e.target.value)}
                   >
                     <MenuItem value="Color">Color</MenuItem>
-                    <MenuItem value="B/W">Black & White</MenuItem>
+                    <MenuItem value="B/W">Black &amp; White</MenuItem>
                   </Select>
                 </FormControl>
-
                 {/* Number of Copies */}
                 <Box
                   sx={{
@@ -260,14 +265,12 @@ const PrintSettingsUI = () => {
                     </IconButton>
                   </Box>
                 </Box>
-
                 {/* Show More Settings (placeholder) */}
                 <Box sx={{ mt: 2 }}>
                   <Button variant="text" color="primary">
                     Show More Settings
                   </Button>
                 </Box>
-
                 {/* Actions */}
                 <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
                   <Button variant="outlined">Apply to All</Button>
