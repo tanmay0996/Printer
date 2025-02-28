@@ -203,35 +203,47 @@ const PrintSettingsUI = () => {
 
             {/* Preview Section */}
             {files[selectedFileIndex] && (
-              <Box sx={{ mt: 4, textAlign: 'center' }}>
-                <Typography variant="h6" gutterBottom>
-                  Preview
-                </Typography>
-                {(() => {
-                  const fileType = getFileType(files[selectedFileIndex].name);
-                  if (fileType === 'pdf') {
-                    return <PDFViewer fileUrl={files[selectedFileIndex].imageUrl} />;
-                  } else if (fileType === 'docx') {
-                    return <DocxPreview file={files[selectedFileIndex].file} />;
-                  } else if (fileType === 'xls' || fileType === 'xlsx') {
-                    return <ExcelPreview file={files[selectedFileIndex].file} />;
-                  } else {
-                    return (
-                      <img
-                        src={files[selectedFileIndex].imageUrl}
-                        alt={files[selectedFileIndex].name}
-                        style={{
-                          maxWidth: '100%',
-                          height: 'auto',
-                          border: '1px solid #ccc',
-                          borderRadius: 4,
-                        }}
-                      />
-                    );
-                  }
-                })()}
-              </Box>
+  <Box sx={{ mt: 4, textAlign: 'center' }}>
+    <Typography variant="h6" gutterBottom>
+      Preview
+    </Typography>
+    {(() => {
+      const fileType = getFileType(files[selectedFileIndex].name);
+      if (fileType === 'pdf') {
+        // Render PDFViewer directly without extra border container
+        return <PDFViewer fileUrl={files[selectedFileIndex].imageUrl} />;
+      } else {
+        // Wrap non-PDF previews in a container with border styling
+        return (
+          <Box
+            sx={{
+              display: 'inline-block',
+              border: '1px solid #ccc',
+              borderRadius: 4,
+              overflow: 'hidden',
+            }}
+          >
+            {fileType === 'docx' ? (
+              <DocxPreview file={files[selectedFileIndex].file} />
+            ) : fileType === 'xls' || fileType === 'xlsx' ? (
+              <ExcelPreview file={files[selectedFileIndex].file} />
+            ) : (
+              <img
+                src={files[selectedFileIndex].imageUrl}
+                alt={files[selectedFileIndex].name}
+                style={{
+                  maxWidth: '100%',
+                  height: 'auto',
+                }}
+              />
             )}
+          </Box>
+        );
+      }
+    })()}
+  </Box>
+)}
+
 
             <Box sx={{ mt: 2, textAlign: 'right' }}>
               <Button variant="contained" color="primary">
