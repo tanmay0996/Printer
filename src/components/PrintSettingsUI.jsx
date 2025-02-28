@@ -25,6 +25,7 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import { useLocation } from 'react-router-dom';
 
+import PDFThumbnail from './PDFThumbnail';
 // Import your PDFViewer component
 import PDFViewer from '../components/PDFViewer';
 
@@ -128,43 +129,48 @@ const PrintSettingsUI = () => {
                     alignItems: 'center',
                   }}
                 >
-                  {files.map((file, index) => (
-                    <Box
-                      key={file.id}
-                      sx={{
-                        position: 'relative',
-                        width: 120,
-                        height: 160,
-                        border: '1px solid #ccc',
-                        borderRadius: 1,
-                        overflow: 'hidden',
-                        cursor: 'pointer',
-                      }}
-                      onClick={() => setSelectedFileIndex(index)}
-                    >
-                      <CardMedia
-                        component="img"
-                        image={file.imageUrl}
-                        alt={file.name}
-                        sx={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                      />
-                      <IconButton
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleRemoveFile(file.id);
-                        }}
-                        sx={{
-                          position: 'absolute',
-                          top: 2,
-                          right: 2,
-                          backgroundColor: 'rgba(255,255,255,0.8)',
-                        }}
-                      >
-                        <CloseIcon fontSize="small" />
-                      </IconButton>
-                    </Box>
-                  ))}
+                 {files.map((file, index) => (
+  <Box
+    key={file.id}
+    sx={{
+      position: 'relative',
+      width: 120,
+      height: 160,
+      border: '1px solid #ccc',
+      borderRadius: 1,
+      overflow: 'hidden',
+      cursor: 'pointer',
+    }}
+    onClick={() => setSelectedFileIndex(index)}
+  >
+    {getFileType(file.name) === 'pdf' ? (
+      <PDFThumbnail fileUrl={file.imageUrl} width={120} height={160} />
+    ) : (
+      <CardMedia
+        component="img"
+        image={file.imageUrl}
+        alt={file.name}
+        sx={{ width: '100%', height: '100%', objectFit: 'contain' }}
+      />
+    )}
+    <IconButton
+      size="small"
+      onClick={(e) => {
+        e.stopPropagation();
+        handleRemoveFile(file.id);
+      }}
+      sx={{
+        position: 'absolute',
+        top: 2,
+        right: 2,
+        backgroundColor: 'rgba(255,255,255,0.8)',
+      }}
+    >
+      <CloseIcon fontSize="small" />
+    </IconButton>
+  </Box>
+))}
+
                   {/* "Add More Files" button */}
                   <Button variant="outlined" component="label">
                     <AddIcon sx={{ mr: 1 }} />
