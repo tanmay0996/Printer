@@ -50,6 +50,10 @@ const PrintSettingsUI = () => {
   const [color, setColor] = useState('Color');
   const [copies, setCopies] = useState(1);
 
+  // New states for additional settings
+  const [showMoreSettings, setShowMoreSettings] = useState(false);
+  const [orientation, setOrientation] = useState('Portrait'); // default
+
   // On mount, check if a file was passed via state and add it to files
   useEffect(() => {
     if (location.state && location.state.selectedFile) {
@@ -125,62 +129,61 @@ const PrintSettingsUI = () => {
                   Uploaded Files
                 </Typography>
                 <Box
-  sx={{
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: 2,
-    mt: 2,
-    alignItems: 'center',
-  }}
->
-  {files.map((file, index) => (
-    <Box
-      key={file.id}
-      sx={{
-        position: 'relative',
-        width: 120,
-        height: 160,
-        border: '1px solid #ccc',
-        borderRadius: 1,
-        overflow: 'hidden',
-        cursor: 'pointer',
-      }}
-      onClick={() => setSelectedFileIndex(index)}
-    >
-      {(() => {
-        const ext = getFileType(file.name);
-        if (ext === 'pdf') {
-          return <PDFThumbnail fileUrl={file.imageUrl} width={120} height={160} />;
-        } else if (ext === 'docx' || ext === 'doc') {
-          return <DocxThumbnail file={file.file} width={120} height={160} />;
-        } else if (ext === 'xls' || ext === 'xlsx') {
-          return <ExcelThumbnail file={file.file} width={120} height={160} />;
-        } else {
-          // Fallback: render image preview
-          return (
-            <CardMedia
-              component="img"
-              image={file.imageUrl}
-              alt={file.name}
-              sx={{ width: '100%', height: '100%', objectFit: 'contain' }}
-            />
-          );
-        }
-      })()}
-      <IconButton
-        size="small"
-        onClick={(e) => {
-          e.stopPropagation();
-          handleRemoveFile(file.id);
-        }}
-        sx={{
-          position: 'absolute',
-          top: 2,
-          right: 2,
-          backgroundColor: 'rgba(255,255,255,0.8)',
-        }}
-      >
-
+                  sx={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: 2,
+                    mt: 2,
+                    alignItems: 'center',
+                  }}
+                >
+                  {files.map((file, index) => (
+                    <Box
+                      key={file.id}
+                      sx={{
+                        position: 'relative',
+                        width: 120,
+                        height: 160,
+                        border: '1px solid #ccc',
+                        borderRadius: 1,
+                        overflow: 'hidden',
+                        cursor: 'pointer',
+                      }}
+                      onClick={() => setSelectedFileIndex(index)}
+                    >
+                      {(() => {
+                        const ext = getFileType(file.name);
+                        if (ext === 'pdf') {
+                          return <PDFThumbnail fileUrl={file.imageUrl} width={120} height={160} />;
+                        } else if (ext === 'docx' || ext === 'doc') {
+                          return <DocxThumbnail file={file.file} width={120} height={160} />;
+                        } else if (ext === 'xls' || ext === 'xlsx') {
+                          return <ExcelThumbnail file={file.file} width={120} height={160} />;
+                        } else {
+                          // Fallback: render image preview
+                          return (
+                            <CardMedia
+                              component="img"
+                              image={file.imageUrl}
+                              alt={file.name}
+                              sx={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                            />
+                          );
+                        }
+                      })()}
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemoveFile(file.id);
+                        }}
+                        sx={{
+                          position: 'absolute',
+                          top: 2,
+                          right: 2,
+                          backgroundColor: 'rgba(255,255,255,0.8)',
+                        }}
+                      >
                         <CloseIcon fontSize="small" />
                       </IconButton>
                     </Box>
@@ -203,56 +206,61 @@ const PrintSettingsUI = () => {
 
             {/* Preview Section */}
             {files[selectedFileIndex] && (
-  <Box sx={{ mt: 4, textAlign: 'center' }}>
-    <Typography variant="h6" gutterBottom>
-      Preview
-    </Typography>
-    {(() => {
-      const fileType = getFileType(files[selectedFileIndex].name);
-      // Define a style object for the preview container based on color selection.
-      const previewStyle = { filter: color === 'B/W' ? 'grayscale(100%)' : 'none' };
+              <Box sx={{ mt: 4, textAlign: 'center' }}>
+                <Typography variant="h6" gutterBottom>
+                  Preview
+                </Typography>
+                {(() => {
+                  const fileType = getFileType(files[selectedFileIndex].name);
+                  // Base style: apply grayscale filter if B/W is selected.
+                  const baseStyle = { filter: color === 'B/W' ? 'grayscale(100%)' : 'none' };
 
-      if (fileType === 'pdf') {
-        // Wrap PDFViewer in a container so that we can apply the filter.
-        return (
-          <Box sx={previewStyle}>
-            <PDFViewer fileUrl={files[selectedFileIndex].imageUrl} />
-          </Box>
-        );
-      } else {
-        // Wrap other previews in a Box that has border styling and the filter applied.
-        return (
-          <Box
-            sx={{
-              display: 'inline-block',
-              border: '1px solid #ccc',
-              borderRadius: 4,
-              overflow: 'hidden',
-              ...previewStyle,
-            }}
-          >
-            {fileType === 'docx' ? (
-              <DocxPreview file={files[selectedFileIndex].file} />
-            ) : fileType === 'xls' || fileType === 'xlsx' ? (
-              <ExcelPreview file={files[selectedFileIndex].file} />
-            ) : (
-              <img
-                src={files[selectedFileIndex].imageUrl}
-                alt={files[selectedFileIndex].name}
-                style={{
-                  maxWidth: '100%',
-                  height: 'auto',
-                }}
-              />
+                  // Adjust container style based on orientation:
+                  const containerStyle =
+  orientation === 'Landscape'
+    ? { ...baseStyle, width: '900px', height: '600px' }  // fixed landscape dimensions
+    : { ...baseStyle, width: 'auto', height: '750px' };
+
+
+                  if (fileType === 'pdf') {
+                    // For PDFs, pass containerStyle to PDFViewer as previewStyle.
+                    return (
+                      <Box sx={containerStyle}>
+                        <PDFViewer fileUrl={files[selectedFileIndex].imageUrl} previewStyle={containerStyle} />
+                      </Box>
+                    );
+                  } else {
+                    // For non-PDFs, wrap the preview in a Box that also adds border styling.
+                    return (
+                      <Box
+                        sx={{
+                          display: 'inline-block',
+                          border: '1px solid #ccc',
+                          borderRadius: 4,
+                          overflow: 'hidden',
+                          ...containerStyle,
+                        }}
+                      >
+                        {fileType === 'docx' || fileType === 'doc' ? (
+                          <DocxPreview file={files[selectedFileIndex].file} />
+                        ) : fileType === 'xls' || fileType === 'xlsx' ? (
+                          <ExcelPreview file={files[selectedFileIndex].file} />
+                        ) : (
+                          <img
+                            src={files[selectedFileIndex].imageUrl}
+                            alt={files[selectedFileIndex].name}
+                            style={{
+                              maxWidth: '100%',
+                              height: 'auto',
+                            }}
+                          />
+                        )}
+                      </Box>
+                    );
+                  }
+                })()}
+              </Box>
             )}
-          </Box>
-        );
-      }
-    })()}
-  </Box>
-)}
-
-
 
             <Box sx={{ mt: 2, textAlign: 'right' }}>
               <Button variant="contained" color="primary">
@@ -312,11 +320,28 @@ const PrintSettingsUI = () => {
                     </IconButton>
                   </Box>
                 </Box>
-                {/* Show More Settings (placeholder) */}
+                {/* Show More Settings */}
                 <Box sx={{ mt: 2 }}>
-                  <Button variant="text" color="primary">
-                    Show More Settings
+                  <Button
+                    variant="text"
+                    color="primary"
+                    onClick={() => setShowMoreSettings((prev) => !prev)}
+                  >
+                    {showMoreSettings ? 'Hide More Settings' : 'Show More Settings'}
                   </Button>
+                  {showMoreSettings && (
+                    <FormControl fullWidth sx={{ mt: 2 }} size="small">
+                      <InputLabel>Layout</InputLabel>
+                      <Select
+                        label="Layout"
+                        value={orientation}
+                        onChange={(e) => setOrientation(e.target.value)}
+                      >
+                        <MenuItem value="Portrait">Portrait</MenuItem>
+                        <MenuItem value="Landscape">Landscape</MenuItem>
+                      </Select>
+                    </FormControl>
+                  )}
                 </Box>
                 {/* Actions */}
                 <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
