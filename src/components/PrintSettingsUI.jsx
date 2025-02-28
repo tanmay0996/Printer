@@ -30,6 +30,8 @@ import PDFThumbnail from './PDFThumbnail';
 import PDFViewer from '../components/PDFViewer';
 import DocxPreview from '../components/DocxPreview';
 import ExcelPreview from '../components/ExcelPreview';
+import DocxThumbnail from './DocxThumbnail';
+import ExcelThumbnail from './ExcelThumbnail';
 
 // Helper function to get file extension
 const getFileType = (fileName) => fileName.split('.').pop().toLowerCase();
@@ -123,51 +125,62 @@ const PrintSettingsUI = () => {
                   Uploaded Files
                 </Typography>
                 <Box
-                  sx={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: 2,
-                    mt: 2,
-                    alignItems: 'center',
-                  }}
-                >
-                  {files.map((file, index) => (
-                    <Box
-                      key={file.id}
-                      sx={{
-                        position: 'relative',
-                        width: 120,
-                        height: 160,
-                        border: '1px solid #ccc',
-                        borderRadius: 1,
-                        overflow: 'hidden',
-                        cursor: 'pointer',
-                      }}
-                      onClick={() => setSelectedFileIndex(index)}
-                    >
-                      {getFileType(file.name) === 'pdf' ? (
-                        <PDFThumbnail fileUrl={file.imageUrl} width={120} height={160} />
-                      ) : (
-                        <CardMedia
-                          component="img"
-                          image={file.imageUrl}
-                          alt={file.name}
-                          sx={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                        />
-                      )}
-                      <IconButton
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleRemoveFile(file.id);
-                        }}
-                        sx={{
-                          position: 'absolute',
-                          top: 2,
-                          right: 2,
-                          backgroundColor: 'rgba(255,255,255,0.8)',
-                        }}
-                      >
+  sx={{
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: 2,
+    mt: 2,
+    alignItems: 'center',
+  }}
+>
+  {files.map((file, index) => (
+    <Box
+      key={file.id}
+      sx={{
+        position: 'relative',
+        width: 120,
+        height: 160,
+        border: '1px solid #ccc',
+        borderRadius: 1,
+        overflow: 'hidden',
+        cursor: 'pointer',
+      }}
+      onClick={() => setSelectedFileIndex(index)}
+    >
+      {(() => {
+        const ext = getFileType(file.name);
+        if (ext === 'pdf') {
+          return <PDFThumbnail fileUrl={file.imageUrl} width={120} height={160} />;
+        } else if (ext === 'docx' || ext === 'doc') {
+          return <DocxThumbnail file={file.file} width={120} height={160} />;
+        } else if (ext === 'xls' || ext === 'xlsx') {
+          return <ExcelThumbnail file={file.file} width={120} height={160} />;
+        } else {
+          // Fallback: render image preview
+          return (
+            <CardMedia
+              component="img"
+              image={file.imageUrl}
+              alt={file.name}
+              sx={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            />
+          );
+        }
+      })()}
+      <IconButton
+        size="small"
+        onClick={(e) => {
+          e.stopPropagation();
+          handleRemoveFile(file.id);
+        }}
+        sx={{
+          position: 'absolute',
+          top: 2,
+          right: 2,
+          backgroundColor: 'rgba(255,255,255,0.8)',
+        }}
+      >
+
                         <CloseIcon fontSize="small" />
                       </IconButton>
                     </Box>
