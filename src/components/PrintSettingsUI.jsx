@@ -26,13 +26,13 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import { useLocation } from 'react-router-dom';
 
 import PDFThumbnail from './PDFThumbnail';
-// Import your PDFViewer component
+// Import your preview components
 import PDFViewer from '../components/PDFViewer';
+import DocxPreview from '../components/DocxPreview';
+import ExcelPreview from '../components/ExcelPreview';
 
 // Helper function to get file extension
-const getFileType = (fileName) => {
-  return fileName.split('.').pop().toLowerCase();
-};
+const getFileType = (fileName) => fileName.split('.').pop().toLowerCase();
 
 const steps = ['Upload File', 'Print Settings', 'Select Location', 'Order Summary'];
 
@@ -56,7 +56,8 @@ const PrintSettingsUI = () => {
       setFiles([{
         id: 1,
         name: passedFile.name,
-        imageUrl: previewURL
+        imageUrl: previewURL,
+        file: passedFile  // store the original file
       }]);
       setSelectedFileIndex(0);
 
@@ -85,6 +86,7 @@ const PrintSettingsUI = () => {
         id: newId,
         name: newFile.name,
         imageUrl: previewURL,
+        file: newFile  // store the original file
       },
     ];
     setFiles(updatedFiles);
@@ -129,48 +131,47 @@ const PrintSettingsUI = () => {
                     alignItems: 'center',
                   }}
                 >
-                 {files.map((file, index) => (
-  <Box
-    key={file.id}
-    sx={{
-      position: 'relative',
-      width: 120,
-      height: 160,
-      border: '1px solid #ccc',
-      borderRadius: 1,
-      overflow: 'hidden',
-      cursor: 'pointer',
-    }}
-    onClick={() => setSelectedFileIndex(index)}
-  >
-    {getFileType(file.name) === 'pdf' ? (
-      <PDFThumbnail fileUrl={file.imageUrl} width={120} height={160} />
-    ) : (
-      <CardMedia
-        component="img"
-        image={file.imageUrl}
-        alt={file.name}
-        sx={{ width: '100%', height: '100%', objectFit: 'contain' }}
-      />
-    )}
-    <IconButton
-      size="small"
-      onClick={(e) => {
-        e.stopPropagation();
-        handleRemoveFile(file.id);
-      }}
-      sx={{
-        position: 'absolute',
-        top: 2,
-        right: 2,
-        backgroundColor: 'rgba(255,255,255,0.8)',
-      }}
-    >
-      <CloseIcon fontSize="small" />
-    </IconButton>
-  </Box>
-))}
-
+                  {files.map((file, index) => (
+                    <Box
+                      key={file.id}
+                      sx={{
+                        position: 'relative',
+                        width: 120,
+                        height: 160,
+                        border: '1px solid #ccc',
+                        borderRadius: 1,
+                        overflow: 'hidden',
+                        cursor: 'pointer',
+                      }}
+                      onClick={() => setSelectedFileIndex(index)}
+                    >
+                      {getFileType(file.name) === 'pdf' ? (
+                        <PDFThumbnail fileUrl={file.imageUrl} width={120} height={160} />
+                      ) : (
+                        <CardMedia
+                          component="img"
+                          image={file.imageUrl}
+                          alt={file.name}
+                          sx={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                        />
+                      )}
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemoveFile(file.id);
+                        }}
+                        sx={{
+                          position: 'absolute',
+                          top: 2,
+                          right: 2,
+                          backgroundColor: 'rgba(255,255,255,0.8)',
+                        }}
+                      >
+                        <CloseIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  ))}
                   {/* "Add More Files" button */}
                   <Button variant="outlined" component="label">
                     <AddIcon sx={{ mr: 1 }} />
@@ -189,29 +190,35 @@ const PrintSettingsUI = () => {
 
             {/* Preview Section */}
             {files[selectedFileIndex] && (
-  <Box sx={{ mt: 4, textAlign: 'center' }}>
-    <Typography variant="h6" gutterBottom>
-      Preview
-    </Typography>
-    {getFileType(files[selectedFileIndex].name) === 'pdf' ? (
-      // Render PDFViewer if the file is a PDF
-      <PDFViewer fileUrl={files[selectedFileIndex].imageUrl} />
-    ) : (
-      // Otherwise, render the image preview
-      <img
-        src={files[selectedFileIndex].imageUrl}
-        alt={files[selectedFileIndex].name}
-        style={{
-          maxWidth: '100%',
-          height: 'auto',
-          border: '1px solid #ccc',
-          borderRadius: 4,
-        }}
-      />
-    )}
-  </Box>
-)}
-
+              <Box sx={{ mt: 4, textAlign: 'center' }}>
+                <Typography variant="h6" gutterBottom>
+                  Preview
+                </Typography>
+                {(() => {
+                  const fileType = getFileType(files[selectedFileIndex].name);
+                  if (fileType === 'pdf') {
+                    return <PDFViewer fileUrl={files[selectedFileIndex].imageUrl} />;
+                  } else if (fileType === 'docx') {
+                    return <DocxPreview file={files[selectedFileIndex].file} />;
+                  } else if (fileType === 'xls' || fileType === 'xlsx') {
+                    return <ExcelPreview file={files[selectedFileIndex].file} />;
+                  } else {
+                    return (
+                      <img
+                        src={files[selectedFileIndex].imageUrl}
+                        alt={files[selectedFileIndex].name}
+                        style={{
+                          maxWidth: '100%',
+                          height: 'auto',
+                          border: '1px solid #ccc',
+                          borderRadius: 4,
+                        }}
+                      />
+                    );
+                  }
+                })()}
+              </Box>
+            )}
 
             <Box sx={{ mt: 2, textAlign: 'right' }}>
               <Button variant="contained" color="primary">
