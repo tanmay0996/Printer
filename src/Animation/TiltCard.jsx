@@ -33,7 +33,7 @@ const TiltCard = ({ children, sx, ...props }) => {
     >
       <Card
         ref={cardRef}
-        elevation={0}
+        elevation={5}
         sx={{
           border: '1px solid #ccc',
           transition: 'transform 0.1s ease-out',
