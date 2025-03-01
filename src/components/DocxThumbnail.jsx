@@ -11,7 +11,7 @@ const DocxThumbnail = ({ file, width = 120, height = 160 }) => {
       reader.onload = async (e) => {
         const arrayBuffer = e.target.result;
         try {
-          // Convert DOCX to HTML (you may adjust options to limit output)
+          // Convert DOCX to HTML (adjust options as needed)
           const result = await mammoth.convertToHtml({ arrayBuffer });
           setHtml(result.value);
         } catch (error) {
@@ -26,20 +26,20 @@ const DocxThumbnail = ({ file, width = 120, height = 160 }) => {
     }
   }, [file]);
 
+  const containerStyle = {
+    width,
+    height,
+    overflow: 'hidden', // Thumbnail size; if you need scroll, use overflowY: 'auto'
+    border: '1px solid #ccc',
+    padding: '4px',
+    fontSize: '12px',
+    lineHeight: '1.2em',
+    backgroundColor: '#fff',
+    color: '#333',
+  };
+
   return (
-    <div
-      style={{
-        width,
-        height,
-        overflow: 'hidden',
-        border: '1px solid #ccc',
-        padding: '4px',
-        fontSize: '12px',
-        lineHeight: '1.2em'
-      }}
-      // Render only a portion (the first “page”) of the content.
-      dangerouslySetInnerHTML={{ __html: html }}
-    />
+    <div style={containerStyle} dangerouslySetInnerHTML={{ __html: html }} />
   );
 };
 
