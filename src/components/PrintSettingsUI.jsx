@@ -31,6 +31,7 @@ import DocxPreview from '../components/DocxPreview';
 import ExcelPreview from '../components/ExcelPreview';
 import DocxThumbnail from './DocxThumbnail';
 import ExcelThumbnail from './ExcelThumbnail';
+import BasicPPTPreview from './BasicPPTPreview';
 
 // Import the custom TiltCard component
 import TiltCard from '../Animation/TiltCard';
@@ -212,60 +213,87 @@ const PrintSettingsUI = () => {
               </CardContent>
             </TiltCard>
 
-            {/* Preview Section */}
             {files[selectedFileIndex] && (
-              <Box sx={{ mt: 4, textAlign: 'center' }}>
-                <Typography variant="h6" gutterBottom>
-                  Preview
-                </Typography>
-                {(() => {
-                  const fileType = getFileType(files[selectedFileIndex].name);
-                  const baseStyle = { filter: color === 'B/W' ? 'grayscale(100%)' : 'none' };
-                  const containerStyle =
-                    orientation === 'Landscape'
-                      ? { ...baseStyle, width: '900px', height: '600px' }
-                      : { ...baseStyle, width: 'auto', height: '750px' };
+  <Box sx={{ mt: 4, textAlign: 'center' }}>
+    <Typography variant="h6" gutterBottom>
+      Preview
+    </Typography>
+    {(() => {
+      const fileType = getFileType(files[selectedFileIndex].name);
+      // Base style: apply grayscale filter if B/W is selected.
+      const baseStyle = { filter: color === 'B/W' ? 'grayscale(100%)' : 'none' };
 
-                  if (fileType === 'pdf') {
-                    return (
-                      <Box sx={containerStyle}>
-                        <PDFViewer
-                          fileUrl={files[selectedFileIndex].imageUrl}
-                          previewStyle={containerStyle}
-                        />
-                      </Box>
-                    );
-                  } else {
-                    return (
-                      <Box
-                        sx={{
-                          display: 'inline-block',
-                          border: '1px solid #ccc',
-                          borderRadius: 4,
-                          overflow: 'hidden',
-                          ...containerStyle
-                        }}
-                      >
-                        {fileType === 'docx' || fileType === 'doc' ? (
-                          <DocxPreview file={files[selectedFileIndex].file} />
-                        ) : fileType === 'xls' || fileType === 'xlsx' ? (
-                          <ExcelPreview file={files[selectedFileIndex].file} />
-                        ) : (
-                          <img
-                            src={files[selectedFileIndex].imageUrl}
-                            alt={files[selectedFileIndex].name}
-                            style={{
-                              maxWidth: '100%',
-                              height: 'auto'
-                            }}
-                          />
-                        )}
-                      </Box>
-                    );
-                  }
-                })()}
-              </Box>
-            )}
+      // Adjust container style based on orientation:
+      const containerStyle =
+        orientation === 'Landscape'
+          ? { ...baseStyle, width: '900px', height: '600px' }
+          : { ...baseStyle, width: 'auto', height: '750px' };
+
+      if (fileType === 'pdf') {
+        return (
+          <Box sx={containerStyle}>
+            <PDFViewer fileUrl={files[selectedFileIndex].imageUrl} previewStyle={containerStyle} />
+          </Box>
+        );
+      } else if (fileType === 'pptx' || fileType === 'ppt') {
+        return (
+          <Box sx={containerStyle}>
+            <BasicPPTPreview file={files[selectedFileIndex].file} />
+          </Box>
+        );
+      } else if (fileType === 'docx' || fileType === 'doc') {
+        return (
+          <Box
+            sx={{
+              display: 'inline-block',
+              border: '1px solid #ccc',
+              borderRadius: 4,
+              overflow: 'hidden',
+              ...containerStyle,
+            }}
+          >
+            <DocxPreview file={files[selectedFileIndex].file} />
+          </Box>
+        );
+      } else if (fileType === 'xls' || fileType === 'xlsx') {
+        return (
+          <Box
+            sx={{
+              display: 'inline-block',
+              border: '1px solid #ccc',
+              borderRadius: 4,
+              overflow: 'hidden',
+              ...containerStyle,
+            }}
+          >
+            <ExcelPreview file={files[selectedFileIndex].file} />
+          </Box>
+        );
+      } else {
+        return (
+          <Box
+            sx={{
+              display: 'inline-block',
+              border: '1px solid #ccc',
+              borderRadius: 4,
+              overflow: 'hidden',
+              ...containerStyle,
+            }}
+          >
+            <img
+              src={files[selectedFileIndex].imageUrl}
+              alt={files[selectedFileIndex].name}
+              style={{
+                maxWidth: '100%',
+                height: 'auto',
+              }}
+            />
+          </Box>
+        );
+      }
+    })()}
+  </Box>
+)}
 
             <Box sx={{ mt: 2, textAlign: 'right' }}>
               <Button variant="contained" color="primary">
