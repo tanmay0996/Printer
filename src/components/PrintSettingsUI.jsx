@@ -10,12 +10,12 @@ import {
   IconButton,
   InputLabel,
   MenuItem,
-  Select,
   Step,
   StepLabel,
   Stepper,
   TextField,
-  Typography
+  Typography,
+  Select
 } from '@mui/material';
 
 // MUI Icons
@@ -54,12 +54,14 @@ const PrintSettingsUI = () => {
     if (location.state && location.state.selectedFile) {
       const passedFile = location.state.selectedFile;
       const previewURL = URL.createObjectURL(passedFile);
-      setFiles([{
-        id: 1,
-        name: passedFile.name,
-        imageUrl: previewURL,
-        file: passedFile
-      }]);
+      setFiles([
+        {
+          id: 1,
+          name: passedFile.name,
+          imageUrl: previewURL,
+          file: passedFile
+        }
+      ]);
       setSelectedFileIndex(0);
       return () => URL.revokeObjectURL(previewURL);
     }
@@ -82,7 +84,7 @@ const PrintSettingsUI = () => {
         name: newFile.name,
         imageUrl: previewURL,
         file: newFile
-      },
+      }
     ];
     setFiles(updatedFiles);
     setSelectedFileIndex(updatedFiles.length - 1);
@@ -97,7 +99,7 @@ const PrintSettingsUI = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: 4, scrollBehavior: 'smooth' }}>
       <Stepper activeStep={1} alternativeLabel>
         {steps.map((label, index) => (
           <Step key={label} completed={index < 1}>
@@ -141,18 +143,40 @@ const PrintSettingsUI = () => {
                       {(() => {
                         const ext = getFileType(file.name);
                         if (ext === 'pdf') {
-                          return <PDFThumbnail fileUrl={file.imageUrl} width={120} height={160} />;
+                          return (
+                            <PDFThumbnail
+                              fileUrl={file.imageUrl}
+                              width={120}
+                              height={160}
+                            />
+                          );
                         } else if (ext === 'docx' || ext === 'doc') {
-                          return <DocxThumbnail file={file.file} width={120} height={160} />;
+                          return (
+                            <DocxThumbnail
+                              file={file.file}
+                              width={120}
+                              height={160}
+                            />
+                          );
                         } else if (ext === 'xls' || ext === 'xlsx') {
-                          return <ExcelThumbnail file={file.file} width={120} height={160} />;
+                          return (
+                            <ExcelThumbnail
+                              file={file.file}
+                              width={120}
+                              height={160}
+                            />
+                          );
                         } else {
                           return (
                             <CardMedia
                               component="img"
                               image={file.imageUrl}
                               alt={file.name}
-                              sx={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                              sx={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'contain'
+                              }}
                             />
                           );
                         }
@@ -188,6 +212,7 @@ const PrintSettingsUI = () => {
               </CardContent>
             </TiltCard>
 
+            {/* Preview Section */}
             {files[selectedFileIndex] && (
               <Box sx={{ mt: 4, textAlign: 'center' }}>
                 <Typography variant="h6" gutterBottom>
@@ -204,7 +229,10 @@ const PrintSettingsUI = () => {
                   if (fileType === 'pdf') {
                     return (
                       <Box sx={containerStyle}>
-                        <PDFViewer fileUrl={files[selectedFileIndex].imageUrl} previewStyle={containerStyle} />
+                        <PDFViewer
+                          fileUrl={files[selectedFileIndex].imageUrl}
+                          previewStyle={containerStyle}
+                        />
                       </Box>
                     );
                   } else {
@@ -215,7 +243,7 @@ const PrintSettingsUI = () => {
                           border: '1px solid #ccc',
                           borderRadius: 4,
                           overflow: 'hidden',
-                          ...containerStyle,
+                          ...containerStyle
                         }}
                       >
                         {fileType === 'docx' || fileType === 'doc' ? (
@@ -226,7 +254,10 @@ const PrintSettingsUI = () => {
                           <img
                             src={files[selectedFileIndex].imageUrl}
                             alt={files[selectedFileIndex].name}
-                            style={{ maxWidth: '100%', height: 'auto' }}
+                            style={{
+                              maxWidth: '100%',
+                              height: 'auto'
+                            }}
                           />
                         )}
                       </Box>
@@ -275,7 +306,7 @@ const PrintSettingsUI = () => {
                     mt: 2,
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'space-between',
+                    justifyContent: 'space-between'
                   }}
                 >
                   <Typography variant="body1">Number of Copies</Typography>
@@ -313,7 +344,13 @@ const PrintSettingsUI = () => {
                     </FormControl>
                   )}
                 </Box>
-                <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
+                <Box
+                  sx={{
+                    mt: 2,
+                    display: 'flex',
+                    justifyContent: 'space-between'
+                  }}
+                >
                   <Button variant="outlined">Apply to All</Button>
                   <Button variant="contained" onClick={handleSaveChanges}>
                     Save Changes
