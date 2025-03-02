@@ -25,13 +25,12 @@ import { useLocation } from 'react-router-dom';
 // Preview components for various file types
 import PDFThumbnail from './PDFThumbnail';
 import PDFViewer from '../components/PDFViewer';
-import DocxPreview from '../components/DocxPreview';
-import ExcelPreview from '../components/ExcelPreview';
+import DocxPreview from './DocxPreview';
+import ExcelPreview from './ExcelPreview';
 import DocxThumbnail from './DocxThumbnail';
 import ExcelThumbnail from './ExcelThumbnail';
-// We'll use PDFViewer for PDF previews (after conversion)
-// BasicPPTPreview should render the first slide (thumbnail) when previewMode prop is set.
-import BasicPPTPreview from './BasicPPTPreview'; 
+// BasicPPTPreview is used to render a thumbnail in the Uploaded Files list if needed.
+import BasicPPTPreview from './BasicPPTPreview';
 
 // Custom animated card component
 import TiltCard from '../Animation/TiltCard';
@@ -53,6 +52,8 @@ const PrintSettingsUI = () => {
   // New state for the converted PDF URL and loading status
   const [convertedPdfUrl, setConvertedPdfUrl] = useState(null);
   const [conversionLoading, setConversionLoading] = useState(false);
+  // New state for slides per page selection
+  const [slidesPerPage, setSlidesPerPage] = useState(1);
 
   // Get the file passed from PrintDocument.jsx via location.state
   useEffect(() => {
@@ -204,8 +205,8 @@ const PrintSettingsUI = () => {
                           return (
                             <BasicPPTPreview
                               file={file.file}
-                              width={-200}
-                              height={200}
+                              width={200} // Wider thumbnail for PPT
+                              height={160}
                               previewMode="thumbnail" // Ensure your component supports this prop
                             />
                           );
@@ -288,7 +289,11 @@ const PrintSettingsUI = () => {
                     if (convertedPdfUrl) {
                       return (
                         <Box sx={containerStyle}>
-                          <PDFViewer fileUrl={convertedPdfUrl} previewStyle={containerStyle} />
+                          <PDFViewer
+                            fileUrl={convertedPdfUrl}
+                            previewStyle={containerStyle}
+                            slidesPerPage={slidesPerPage} // Pass slides per page option to PDFViewer
+                          />
                         </Box>
                       );
                     }
@@ -300,7 +305,10 @@ const PrintSettingsUI = () => {
                   if (fileType === 'pdf') {
                     return (
                       <Box sx={containerStyle}>
-                        <PDFViewer fileUrl={selectedFile.imageUrl} previewStyle={containerStyle} />
+                        <PDFViewer
+                          fileUrl={selectedFile.imageUrl}
+                          previewStyle={containerStyle}
+                        />
                       </Box>
                     );
                   } else if (fileType === 'docx' || fileType === 'doc') {
@@ -358,11 +366,12 @@ const PrintSettingsUI = () => {
               </Typography>
             )}
 
-            <Box sx={{ mt: 2, textAlign: 'right' }}>
+            {/* (Optional) You can uncomment the Proceed button if needed */}
+            {/* <Box sx={{ mt: 2, textAlign: 'right' }}>
               <Button variant="contained" color="primary">
                 Proceed to Select Shop
               </Button>
-            </Box>
+            </Box> */}
           </Grid>
 
           {/* Right Panel: Print Options */}
@@ -392,6 +401,44 @@ const PrintSettingsUI = () => {
                     <MenuItem value="B/W">Black &amp; White</MenuItem>
                   </Select>
                 </FormControl>
+                {/* Show More Settings section */}
+                <Box sx={{ mt: 2 }}>
+                  <Button
+                    variant="text"
+                    color="primary"
+                    onClick={() => setShowMoreSettings((prev) => !prev)}
+                  >
+                    {showMoreSettings ? 'Hide More Settings' : 'Show More Settings'}
+                  </Button>
+                  {showMoreSettings && (
+                    <>
+                      <FormControl fullWidth sx={{ mt: 2 }} size="small">
+                        <InputLabel>Layout</InputLabel>
+                        <Select
+                          label="Layout"
+                          value={orientation}
+                          onChange={(e) => setOrientation(e.target.value)}
+                        >
+                          <MenuItem value="Portrait">Portrait</MenuItem>
+                          <MenuItem value="Landscape">Landscape</MenuItem>
+                        </Select>
+                      </FormControl>
+                      <FormControl fullWidth sx={{ mt: 2 }} size="small">
+                        <InputLabel>Slides per Page</InputLabel>
+                        <Select
+                          label="Slides per Page"
+                          value={slidesPerPage}
+                          onChange={(e) => setSlidesPerPage(e.target.value)}
+                        >
+                          <MenuItem value={1}>1</MenuItem>
+                          <MenuItem value={2}>2</MenuItem>
+                          <MenuItem value={4}>4</MenuItem>
+                          <MenuItem value={6}>6</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </>
+                  )}
+                </Box>
                 <Box
                   sx={{
                     mt: 2,
@@ -412,28 +459,6 @@ const PrintSettingsUI = () => {
                       <AddIcon />
                     </IconButton>
                   </Box>
-                </Box>
-                <Box sx={{ mt: 2 }}>
-                  <Button
-                    variant="text"
-                    color="primary"
-                    onClick={() => setShowMoreSettings((prev) => !prev)}
-                  >
-                    {showMoreSettings ? 'Hide More Settings' : 'Show More Settings'}
-                  </Button>
-                  {showMoreSettings && (
-                    <FormControl fullWidth sx={{ mt: 2 }} size="small">
-                      <InputLabel>Layout</InputLabel>
-                      <Select
-                        label="Layout"
-                        value={orientation}
-                        onChange={(e) => setOrientation(e.target.value)}
-                      >
-                        <MenuItem value="Portrait">Portrait</MenuItem>
-                        <MenuItem value="Landscape">Landscape</MenuItem>
-                      </Select>
-                    </FormControl>
-                  )}
                 </Box>
                 <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
                   <Button variant="outlined">Apply to All</Button>
