@@ -30,7 +30,8 @@ import ExcelPreview from '../components/ExcelPreview';
 import DocxThumbnail from './DocxThumbnail';
 import ExcelThumbnail from './ExcelThumbnail';
 // We'll use PDFViewer for PDF previews (after conversion)
-import BasicPPTPreview from './BasicPPTPreview'; // fallback if needed
+// BasicPPTPreview should render the first slide (thumbnail) when previewMode prop is set.
+import BasicPPTPreview from './BasicPPTPreview'; 
 
 // Custom animated card component
 import TiltCard from '../Animation/TiltCard';
@@ -198,6 +199,16 @@ const PrintSettingsUI = () => {
                               height={160}
                             />
                           );
+                        } else if (ext === 'ppt' || ext === 'pptx') {
+                          // Render the first page of the PPT/PPTX as a thumbnail
+                          return (
+                            <BasicPPTPreview
+                              file={file.file}
+                              width={-200}
+                              height={200}
+                              previewMode="thumbnail" // Ensure your component supports this prop
+                            />
+                          );
                         } else if (ext === 'xls' || ext === 'xlsx') {
                           return (
                             <ExcelThumbnail
@@ -215,7 +226,7 @@ const PrintSettingsUI = () => {
                               sx={{
                                 width: '100%',
                                 height: '100%',
-                                objectFit: 'contain'
+                                objectFit: 'contain',
                               }}
                             />
                           );
