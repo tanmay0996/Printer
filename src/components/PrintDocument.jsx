@@ -27,7 +27,7 @@ const PrintDocument = () => {
     }
   };
 
-  // Define simple motion variants if needed
+  // Simple motion variants for animation
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
@@ -38,14 +38,12 @@ const PrintDocument = () => {
       sx={{
         minHeight: '100vh',
         backgroundImage: 'url(https://i.pinimg.com/originals/05/3b/31/053b31b540fa16934f232841d1721e64.gif)',
-       backgroundSize: '120% 175%',
-        backgroundPosition: ' 40% center',
+        backgroundSize: '120% 175%',
+        backgroundPosition: '40% center',
         backgroundRepeat: 'no-repeat',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        // width:'100vw'
-        // marginLeft:'%'
       }}
     >
       <Container
@@ -58,18 +56,14 @@ const PrintDocument = () => {
           boxShadow: 3,
         }}
       >
-        {/* Heading with Framer Motion */}
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={itemVariants}
-        >
+        {/* Heading */}
+        <motion.div initial="hidden" animate="visible" variants={itemVariants}>
           <Typography variant="h4" component="h1" gutterBottom>
             Print Document, <span style={{ color: '#1976d2' }}>Smartly and Securely.</span>
           </Typography>
         </motion.div>
 
-        {/* Drag & Drop / Choose Files Box */}
+        {/* File Upload Box */}
         <motion.div initial="hidden" animate="visible" variants={itemVariants}>
           <Box
             sx={{
@@ -103,7 +97,7 @@ const PrintDocument = () => {
           </Box>
         </motion.div>
 
-        {/* How it Works */}
+        {/* How It Works Section */}
         <motion.div initial="hidden" animate="visible" variants={itemVariants}>
           <Typography variant="h5" gutterBottom>
             How it works?

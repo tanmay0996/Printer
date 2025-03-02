@@ -17,23 +17,22 @@ import {
   Typography,
   Select
 } from '@mui/material';
-
-// MUI Icons
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import { useLocation } from 'react-router-dom';
 
+// Preview components for various file types
 import PDFThumbnail from './PDFThumbnail';
-// Import your preview components
 import PDFViewer from '../components/PDFViewer';
 import DocxPreview from '../components/DocxPreview';
 import ExcelPreview from '../components/ExcelPreview';
 import DocxThumbnail from './DocxThumbnail';
 import ExcelThumbnail from './ExcelThumbnail';
-import BasicPPTPreview from './BasicPPTPreview';
+// We'll use PDFViewer for PDF previews (after conversion)
+import BasicPPTPreview from './BasicPPTPreview'; // fallback if needed
 
-// Import the custom TiltCard component
+// Custom animated card component
 import TiltCard from '../Animation/TiltCard';
 
 // Helper function to get file extension
@@ -50,10 +49,15 @@ const PrintSettingsUI = () => {
   const [copies, setCopies] = useState(1);
   const [showMoreSettings, setShowMoreSettings] = useState(false);
   const [orientation, setOrientation] = useState('Portrait');
+  // New state for the converted PDF URL and loading status
+  const [convertedPdfUrl, setConvertedPdfUrl] = useState(null);
+  const [conversionLoading, setConversionLoading] = useState(false);
 
+  // Get the file passed from PrintDocument.jsx via location.state
   useEffect(() => {
     if (location.state && location.state.selectedFile) {
       const passedFile = location.state.selectedFile;
+      console.log('File received in PrintSettingsUI:', passedFile);
       const previewURL = URL.createObjectURL(passedFile);
       setFiles([
         {
@@ -64,12 +68,47 @@ const PrintSettingsUI = () => {
         }
       ]);
       setSelectedFileIndex(0);
+      // Clean up the object URL on unmount
       return () => URL.revokeObjectURL(previewURL);
     }
   }, [location.state]);
 
+  // Function to convert a PPT/PPTX file to PDF via the backend
+  const convertPptToPdf = async (file) => {
+    setConversionLoading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const response = await fetch('http://localhost:5000/convert', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await response.json();
+      if (data.url) {
+        setConvertedPdfUrl(data.url);
+      } else {
+        console.error('Conversion failed: No URL returned');
+      }
+    } catch (error) {
+      console.error('Error during conversion:', error);
+    } finally {
+      setConversionLoading(false);
+    }
+  };
+
+  // Trigger conversion if the uploaded file is a PPT/PPTX and no PDF URL exists yet
+  useEffect(() => {
+    if (files.length > 0 && files[selectedFileIndex]) {
+      const fileObj = files[selectedFileIndex];
+      const fileType = getFileType(fileObj.name);
+      if ((fileType === 'ppt' || fileType === 'pptx') && !convertedPdfUrl) {
+        convertPptToPdf(fileObj.file);
+      }
+    }
+  }, [files, selectedFileIndex, convertedPdfUrl]);
+
   const handleRemoveFile = (id) => {
-    setFiles(prev => prev.filter(file => file.id !== id));
+    setFiles((prev) => prev.filter((file) => file.id !== id));
     if (files.length > 1) setSelectedFileIndex(0);
   };
 
@@ -92,8 +131,8 @@ const PrintSettingsUI = () => {
     event.target.value = null;
   };
 
-  const incrementCopies = () => setCopies(prev => prev + 1);
-  const decrementCopies = () => setCopies(prev => (prev > 1 ? prev - 1 : 1));
+  const incrementCopies = () => setCopies((prev) => prev + 1);
+  const decrementCopies = () => setCopies((prev) => (prev > 1 ? prev - 1 : 1));
 
   const handleSaveChanges = () => {
     alert('Settings saved!');
@@ -111,7 +150,7 @@ const PrintSettingsUI = () => {
 
       <Box sx={{ mt: 4 }}>
         <Grid container spacing={3}>
-          {/* Left Panel */}
+          {/* Left Panel: Uploaded Files & Preview */}
           <Grid item xs={12} md={8}>
             <TiltCard sx={{ p: 2 }}>
               <CardContent>
@@ -213,87 +252,100 @@ const PrintSettingsUI = () => {
               </CardContent>
             </TiltCard>
 
-            {files[selectedFileIndex] && (
-  <Box sx={{ mt: 4, textAlign: 'center' }}>
-    <Typography variant="h6" gutterBottom>
-      Preview
-    </Typography>
-    {(() => {
-      const fileType = getFileType(files[selectedFileIndex].name);
-      // Base style: apply grayscale filter if B/W is selected.
-      const baseStyle = { filter: color === 'B/W' ? 'grayscale(100%)' : 'none' };
+            {/* Preview Section */}
+            {files[selectedFileIndex] ? (
+              <Box sx={{ mt: 4, textAlign: 'center' }}>
+                <Typography variant="h6" gutterBottom>
+                  Preview
+                </Typography>
+                {(() => {
+                  const selectedFile = files[selectedFileIndex];
+                  const fileType = getFileType(selectedFile.name);
+                  // Base style: apply grayscale filter if B/W is selected.
+                  const baseStyle = { filter: color === 'B/W' ? 'grayscale(100%)' : 'none' };
+                  // Adjust container style based on orientation:
+                  const containerStyle =
+                    orientation === 'Landscape'
+                      ? { ...baseStyle, width: '900px', height: '600px' }
+                      : { ...baseStyle, width: 'auto', height: '750px' };
 
-      // Adjust container style based on orientation:
-      const containerStyle =
-        orientation === 'Landscape'
-          ? { ...baseStyle, width: '900px', height: '600px' }
-          : { ...baseStyle, width: 'auto', height: '750px' };
+                  // If the file is a PPT/PPTX, show the converted PDF preview once available.
+                  if (fileType === 'ppt' || fileType === 'pptx') {
+                    if (conversionLoading) {
+                      return <Typography>Converting PPT to PDF...</Typography>;
+                    }
+                    if (convertedPdfUrl) {
+                      return (
+                        <Box sx={containerStyle}>
+                          <PDFViewer fileUrl={convertedPdfUrl} previewStyle={containerStyle} />
+                        </Box>
+                      );
+                    }
+                    // Optionally, show a fallback if conversion failed
+                    return <Typography>Conversion failed or not available.</Typography>;
+                  }
 
-      if (fileType === 'pdf') {
-        return (
-          <Box sx={containerStyle}>
-            <PDFViewer fileUrl={files[selectedFileIndex].imageUrl} previewStyle={containerStyle} />
-          </Box>
-        );
-      } else if (fileType === 'pptx' || fileType === 'ppt') {
-        return (
-          <Box sx={containerStyle}>
-            <BasicPPTPreview file={files[selectedFileIndex].file} />
-          </Box>
-        );
-      } else if (fileType === 'docx' || fileType === 'doc') {
-        return (
-          <Box
-            sx={{
-              display: 'inline-block',
-              border: '1px solid #ccc',
-              borderRadius: 4,
-              overflow: 'hidden',
-              ...containerStyle,
-            }}
-          >
-            <DocxPreview file={files[selectedFileIndex].file} />
-          </Box>
-        );
-      } else if (fileType === 'xls' || fileType === 'xlsx') {
-        return (
-          <Box
-            sx={{
-              display: 'inline-block',
-              border: '1px solid #ccc',
-              borderRadius: 4,
-              overflow: 'hidden',
-              ...containerStyle,
-            }}
-          >
-            <ExcelPreview file={files[selectedFileIndex].file} />
-          </Box>
-        );
-      } else {
-        return (
-          <Box
-            sx={{
-              display: 'inline-block',
-              border: '1px solid #ccc',
-              borderRadius: 4,
-              overflow: 'hidden',
-              ...containerStyle,
-            }}
-          >
-            <img
-              src={files[selectedFileIndex].imageUrl}
-              alt={files[selectedFileIndex].name}
-              style={{
-                maxWidth: '100%',
-                height: 'auto',
-              }}
-            />
-          </Box>
-        );
-      }
-    })()}
-  </Box>
-)}
+                  // Other file types:
+                  if (fileType === 'pdf') {
+                    return (
+                      <Box sx={containerStyle}>
+                        <PDFViewer fileUrl={selectedFile.imageUrl} previewStyle={containerStyle} />
+                      </Box>
+                    );
+                  } else if (fileType === 'docx' || fileType === 'doc') {
+                    return (
+                      <Box
+                        sx={{
+                          display: 'inline-block',
+                          border: '1px solid #ccc',
+                          borderRadius: 4,
+                          overflow: 'hidden',
+                          ...containerStyle,
+                        }}
+                      >
+                        <DocxPreview file={selectedFile.file} />
+                      </Box>
+                    );
+                  } else if (fileType === 'xls' || fileType === 'xlsx') {
+                    return (
+                      <Box
+                        sx={{
+                          display: 'inline-block',
+                          border: '1px solid #ccc',
+                          borderRadius: 4,
+                          overflow: 'hidden',
+                          ...containerStyle,
+                        }}
+                      >
+                        <ExcelPreview file={selectedFile.file} />
+                      </Box>
+                    );
+                  } else {
+                    return (
+                      <Box
+                        sx={{
+                          display: 'inline-block',
+                          border: '1px solid #ccc',
+                          borderRadius: 4,
+                          overflow: 'hidden',
+                          ...containerStyle,
+                        }}
+                      >
+                        <img
+                          src={selectedFile.imageUrl}
+                          alt={selectedFile.name}
+                          style={{ maxWidth: '100%', height: 'auto' }}
+                        />
+                      </Box>
+                    );
+                  }
+                })()}
+              </Box>
+            ) : (
+              <Typography variant="body1" sx={{ mt: 4 }}>
+                No file selected for preview.
+              </Typography>
+            )}
 
             <Box sx={{ mt: 2, textAlign: 'right' }}>
               <Button variant="contained" color="primary">
@@ -302,7 +354,7 @@ const PrintSettingsUI = () => {
             </Box>
           </Grid>
 
-          {/* Right Panel */}
+          {/* Right Panel: Print Options */}
           <Grid item xs={12} md={4}>
             <TiltCard sx={{ p: 2 }}>
               <CardContent>
@@ -372,13 +424,7 @@ const PrintSettingsUI = () => {
                     </FormControl>
                   )}
                 </Box>
-                <Box
-                  sx={{
-                    mt: 2,
-                    display: 'flex',
-                    justifyContent: 'space-between'
-                  }}
-                >
+                <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
                   <Button variant="outlined">Apply to All</Button>
                   <Button variant="contained" onClick={handleSaveChanges}>
                     Save Changes
