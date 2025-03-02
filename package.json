@@ -16,6 +16,7 @@
     "@mui/material": "^6.4.6",
     "@react-pdf-viewer/core": "^3.7.0",
     "@react-pdf-viewer/default-layout": "^3.12.0",
+    "convertapi": "^1.15.0",
     "framer-motion": "^12.4.7",
     "jszip": "^3.10.1",
     "mammoth": "^1.9.0",
