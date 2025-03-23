@@ -29,10 +29,10 @@ import DocxPreview from './DocxPreview';
 import ExcelPreview from './ExcelPreview';
 import DocxThumbnail from './DocxThumbnail';
 import ExcelThumbnail from './ExcelThumbnail';
-// BasicPPTPreview is used to render a thumbnail in the Uploaded Files list if needed.
+
 import BasicPPTPreview from './BasicPPTPreview';
 
-// Custom animated card component
+
 import TiltCard from '../Animation/TiltCard';
 
 // Helper function to get file extension
