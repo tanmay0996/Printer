@@ -81,7 +81,9 @@ const PrintSettingsUI = () => {
     const formData = new FormData();
     formData.append('file', file);
     try {
-      const response = await fetch('http://localhost:5000/convert', {
+      console.log("Backend URL:", import.meta.env.VITE_REACT_APP_BACKEND_URL);
+      const response = await fetch(`${import.meta.env.VITE_REACT_APP_BACKEND_URL}/convert`, {
+        
         method: 'POST',
         body: formData,
       });
